@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	L "./api"
+
 	_ "github.com/lib/pq"
 )
 
@@ -24,6 +26,10 @@ func main() {
 	initDb()
 	defer db.Close()
 
+	// Rota -> chama uma função
+	http.HandleFunc("/api/index", L.IndexHandler)
+	http.HandleFunc("/api/repo", L.RepoHandler)
+
 	log.Fatal(http.ListenAndServe("localhost:3131", nil))
 }
 
@@ -31,10 +37,8 @@ func initDb() {
 	config := dbConfig()
 	var err error
 
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		config[dbhost], config[dbport],
-		config[dbuser], config[dbpass], config[dbname])
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		config[dbhost], config[dbport], config[dbuser], config[dbpass], config[dbname])
 
 	db, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
