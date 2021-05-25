@@ -6,54 +6,43 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
 
 const (
-	dbhost = "DBhost"
-	dbport = "DBport"
-	dbuser = "DBuser"
-	dbpass = "DBpass"
-	dbname = "DBname"
+	dbhost = "DBHOST"
+	dbport = "DBPORT"
+	dbuser = "DBUSER"
+	dbpass = "DBPASS"
+	dbname = "DBNAME"
 )
 
 func main() {
-	initDB()
+	initDb()
 	defer db.Close()
 
-	http.HandleFunc("/api/index", indexHandler)
-	http.HandleFunc("/api/repo/", repoHandler)
 	log.Fatal(http.ListenAndServe("localhost:3131", nil))
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	
-}
-
-func repoHandler(w http.ResponseWriter, r *http.Request) {
-	
-}
-
-func initDB() {
+func initDb() {
 	config := dbConfig()
 	var err error
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s " + "password=%s dbname=%s sslmode=disable", 
-		config[dbhost], 
-		config[dbport], 
-		config[dbuser], 
-		config[dbpass], 
-		config[dbname]
-	)
+
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		config[dbhost], config[dbport],
+		config[dbuser], config[dbpass], config[dbname])
 
 	db, err = sql.Open("postgres", psqlInfo)
-	if (err != nil) {
+	if err != nil {
 		panic(err)
 	}
 
 	err = db.Ping()
-	if (err != nil) {
+	if err != nil {
 		panic(err)
 	}
 
@@ -68,36 +57,31 @@ func dbConfig() map[string]string {
 		panic("DBHOST environment variable required but not set")
 	}
 
-	host, ok := os.LookupEnv(dbport)
+	port, ok := os.LookupEnv(dbport)
 	if !ok {
 		panic("DBPORT environment variable required but not set")
 	}
 
-	host, ok := os.LookupEnv(dbport)
-	if !ok {
-		panic("DBPORT environment variable required but not set")
-	}
-
-	host, ok := os.LookupEnv(dbuser)
+	user, ok := os.LookupEnv(dbuser)
 	if !ok {
 		panic("DBUSER environment variable required but not set")
 	}
 
-	host, ok := os.LookupEnv(dbpass)
+	password, ok := os.LookupEnv(dbpass)
 	if !ok {
 		panic("DBPASS environment variable required but not set")
 	}
 
-	host, ok := os.LookupEnv(dbname)
+	name, ok := os.LookupEnv(dbname)
 	if !ok {
 		panic("DBNAME environment variable required but not set")
 	}
 
-	conf(dbhost) = host
-	conf(dbport) = port
-	conf(dbuser) = user
-	conf(dbpassword) = password
-	conf(dbname) = name
+	conf[dbhost] = host
+	conf[dbport] = port
+	conf[dbuser] = user
+	conf[dbpass] = password
+	conf[dbname] = name
 
 	return conf
 }
